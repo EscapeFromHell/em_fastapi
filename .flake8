@@ -1,0 +1,13 @@
+no-accept-encodings = true
+max_line_length = 120
+max-complexity = 8
+max-cognitive-complexity = 8
+max-expression-complexity = 8
+per-file-ignores=
+    src/*: D100,D101,D103,D104,D106,D107,ANN101,ANN201,ANN204,B008,F401,G004,E800,F841,CCR001
+    src/core/crud/*: D100,D101,D104,D106,D107,D205,A002,ANN101,ANN204,B008,ECE001,F401,G004,U100,VNE003
+    src/core/schemas/*: D100,D101,D104,D106,D107,A003,ANN101,ANN204,F401,VNE003
+    src/core/models/*: D100,D101,D104,D105,D106,D107,A003,ANN101,ANN204,B008,F401,G004,N805,VNE003
+    src/config/*: D100,D101,D102,D104,D106,D107,ANN101,ANN204,B008,ECE001,F401,G004,U100,N805,VNE001
+    src/core/db/*: D100,D103,D104,G200,F401
+    src/deps/*: D100,D103,D104,N803,B008,F401
