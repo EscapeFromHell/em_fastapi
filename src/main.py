@@ -1,17 +1,17 @@
 import uvicorn
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_cache.backends.redis import RedisBackend
 
 from src.api.api_v1 import api_router
 from src.config import settings
-from src.core.db import create_metadata
-
+from src.core.db import redis, redis_cache
 
 root_router = APIRouter()
 
 
 def get_application() -> FastAPI:
-    app = FastAPI(title="Pattern FastAPI")
+    app = FastAPI(title="Spimex FastAPI")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -29,7 +29,7 @@ app = get_application()
 
 @app.on_event("startup")
 async def startup_event():
-    await create_metadata()
+    redis_cache.init(RedisBackend(redis), prefix="fastapi-cache")
 
 
 if __name__ == "__main__":

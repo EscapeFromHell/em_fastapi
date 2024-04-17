@@ -1,12 +1,18 @@
 from pydantic import AnyHttpUrl, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api_v1"
     REDIS_URL: str = "redis://redis:6379"
-    REDIS_EXPIRATION_TIME: int = 30   # 24 * 60 * 60
+    REDIS_EXPIRATION_TIME: int = 24 * 60 * 60
     URL: str = "https://spimex.com/upload/reports/oil_xls/oil_xls_"
+    DRIVER: str = "postgresql+asyncpg://"
+    USER: str = "postgres"
+    PASSWORD: str = ":password"
+    HOST: str = "@spimex-fastapi-db"
+    PORT: str = ":5432/"
+    NAME: str = "spimex-fastapi"
 
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = [
         "http://localhost",
@@ -24,8 +30,6 @@ class Settings(BaseSettings):
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
-
-    # DATABASE_DSN: str = "postgresql+asyncpg://postgres:password@spimex-fastapi-db:5432/spimex-fastapi"
 
     class Config:
         case_sensitive = True

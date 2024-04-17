@@ -11,19 +11,18 @@ from src.core.schemas import SpimexTradingResultsCreate, SpimexTradingResultsUpd
 
 
 class CRUDSpimexTradingResults(CRUDBase[SpimexTradingResults, SpimexTradingResultsCreate, SpimexTradingResultsUpdate]):
-    """Custom CRUD operations for the SpimexTradingResults model."""
     def __add_filters_to_query(self, query, oil_id, delivery_type_id, delivery_basis_id):
         """
-        Adds filters to the given SQLAlchemy query based on the provided parameters.
+        Добавляет фильтры к заданному запросу SQLAlchemy на основе предоставленных параметров.
 
         Args:
-            query (SQLAlchemy Query): The SQLAlchemy query to add filters to.
-            oil_id (str | None): The ID of the oil to filter by.
-            delivery_type_id (str | None): The ID of the delivery type to filter by.
-            delivery_basis_id (str | None): The ID of the delivery basis to filter by.
+            query (SQLAlchemy Query): Запрос SQLAlchemy, к которому нужно добавить фильтры.
+            oil_id (str | None): Идентификатор нефти для фильтрации.
+            delivery_type_id (str | None): Идентификатор типа доставки для фильтрации.
+            delivery_basis_id (str | None): Идентификатор базиса поставки для фильтрации.
 
         Returns:
-            SQLAlchemy Query: The modified query with added filters.
+            SQLAlchemy Query: Измененный запрос с добавленными фильтрами.
         """
         if oil_id:
             query = query.filter(SpimexTradingResults.oil_id == oil_id)
@@ -35,27 +34,28 @@ class CRUDSpimexTradingResults(CRUDBase[SpimexTradingResults, SpimexTradingResul
 
     async def add_to_db(self, db: AsyncSession, objects: list[SpimexTradingResults]) -> None:
         """
-        Adds the given list of SpimexTradingResults objects to the database session.
+        Добавляет список объектов SpimexTradingResults в сеанс базы данных.
 
         Args:
-            db (AsyncSession): The database session to add the objects to.
-            objects (list[SpimexTradingResults]): The list of SpimexTradingResults objects to add.
+            db (AsyncSession): Сеанс базы данных для добавления объектов.
+            objects (list[SpimexTradingResults]): Список объектов SpimexTradingResults для добавления.
 
         Returns:
             None
         """
-        db.add_all(objects)
+        async with db.begin():
+            db.add_all(objects)
 
     async def fetch_one_trading_result_by_date(self, db: AsyncSession, date: date) -> SpimexTradingResults | None:
         """
-        Fetches a single SpimexTradingResults object from the database by its date.
+        Получает один объект SpimexTradingResults из базы данных по его дате.
 
         Args:
-            db (AsyncSession): The database session to fetch the object from.
-            date (date): The date of the trading result to fetch.
+            db (AsyncSession): Сеанс базы данных для получения объекта.
+            date (date): Дата торгового результата для получения.
 
         Returns:
-            SpimexTradingResults | None: The fetched SpimexTradingResults object, or None if not found.
+            SpimexTradingResults | None: Полученный объект SpimexTradingResults или None, если не найден.
         """
         query = await db.execute(select(SpimexTradingResults).filter_by(date=date).limit(1))
         try:
@@ -65,20 +65,20 @@ class CRUDSpimexTradingResults(CRUDBase[SpimexTradingResults, SpimexTradingResul
             return None
 
     async def get_last_results(
-            self, db: AsyncSession, oil_id: str | None, delivery_type_id: str | None, delivery_basis_id: str | None
+        self, db: AsyncSession, oil_id: str | None, delivery_type_id: str | None, delivery_basis_id: str | None
     ) -> list[SpimexTradingResults]:
         """
-        Fetches the last trading results from the database,
-        optionally filtered by oil_id, delivery_type_id, and delivery_basis_id.
+        Получает последние результаты торгов из базы данных,
+        при необходимости фильтруемые по oil_id, delivery_type_id и delivery_basis_id.
 
         Args:
-            db (AsyncSession): The database session to fetch the results from.
-            oil_id (str | None): The ID of the oil to filter by.
-            delivery_type_id (str | None): The ID of the delivery type to filter by.
-            delivery_basis_id (str | None): The ID of the delivery basis to filter by.
+            db (AsyncSession): Сеанс базы данных для получения результатов.
+            oil_id (str | None): Идентификатор нефти для фильтрации.
+            delivery_type_id (str | None): Идентификатор типа доставки для фильтрации.
+            delivery_basis_id (str | None): Идентификатор базиса поставки для фильтрации.
 
         Returns:
-            list[SpimexTradingResults]: The fetched list of SpimexTradingResults objects.
+            list[SpimexTradingResults]: Полученный список объектов SpimexTradingResults.
         """
         query = await db.execute(select(SpimexTradingResults.date.distinct()).order_by(desc(SpimexTradingResults.date)))
         dates = query.scalars().all()
@@ -97,29 +97,28 @@ class CRUDSpimexTradingResults(CRUDBase[SpimexTradingResults, SpimexTradingResul
         return list(results)
 
     async def get_trading_results_in_period(
-            self,
-            start_date: date,
-            end_date: date,
-            db: AsyncSession,
-            oil_id: str | None,
-            delivery_type_id: str | None,
-            delivery_basis_id: str | None
+        self,
+        start_date: date,
+        end_date: date,
+        db: AsyncSession,
+        oil_id: str | None,
+        delivery_type_id: str | None,
+        delivery_basis_id: str | None,
     ) -> list[SpimexTradingResults]:
         """
-        Fetches the trading results from the database within the specified date range,
-        optionally filtered by oil_id, delivery_type_id, and delivery_basis_id.
+        Получает результаты торгов из базы данных в указанном диапазоне дат,
+        при необходимости фильтруемые по oil_id, delivery_type_id и delivery_basis_id.
 
         Args:
-            start_date (date): The start date of the date range.
-            end_date (date): The end date of the date range.
-            db (AsyncSession): The database session to fetch the results from.
-            oil_id (str | None): The ID of the oil to filter by.
-            delivery_type_id (str | None): The ID of the delivery type to filter by.
-            delivery_basis_id (str | None): The ID of the delivery basis to filter by.
+            start_date (date): Начальная дата диапазона.
+            end_date (date): Конечная дата диапазона.
+            db (AsyncSession): Сеанс базы данных для получения результатов.
+            oil_id (str | None): Идентификатор нефти для фильтрации.
+            delivery_type_id (str | None): Идентификатор типа доставки для фильтрации.
+            delivery_basis_id (str | None): Идентификатор базиса поставки для фильтрации.
 
         Returns:
-            list[SpimexTradingResults]: The fetched list of SpimexTradingResults objects
-            within the specified date range.
+            list[SpimexTradingResults]: Полученный список объектов SpimexTradingResults в указанном диапазоне дат.
         """
         base_query = select(SpimexTradingResults).filter(
             and_(SpimexTradingResults.date >= start_date, SpimexTradingResults.date <= end_date)
